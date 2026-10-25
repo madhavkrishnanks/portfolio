@@ -814,7 +814,8 @@ a.v:hover {
 }
 
 .media-frame {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
+  max-height: 300px;
   display: grid;
   place-items: center;
   background: var(--bg);
