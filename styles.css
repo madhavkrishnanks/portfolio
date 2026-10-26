@@ -1,5 +1,5 @@
 /* ==================================================================
-   Styesheet — portfolio
+   Stylesheet — portfolio
    Plain CSS, no framework, no build step.
    ================================================================== */
 
@@ -21,17 +21,6 @@
 
   --wrap: 1080px;
   --pad: 28px;
-
-  --board-sub: #1d5544;
-  --board-edge: #0e3325;
-  --board-copper: #c8763c;
-  --board-gold: #d9b25a;
-  --board-silk: #f2eee3;
-  --board-ic: #191a1c;
-  --board-part: #6e6f75;
-  --board-hole: #faf8f4;
-  --board-plate: #ffffff;
-  --board-plate-edge: rgba(20, 20, 22, 0.14);
 }
 
 html[data-theme="dark"] {
@@ -44,13 +33,6 @@ html[data-theme="dark"] {
   --rule-strong: #3d3d43;
   --accent: #e2764a;
   --accent-ink: #17171a;
-
-  --board-sub: #22654f;
-  --board-edge: #0b2a1e;
-  --board-copper: #d98a4e;
-  --board-hole: #111112;
-  --board-plate: #26262b;
-  --board-plate-edge: rgba(255, 255, 255, 0.14);
 }
 
 * {
@@ -213,69 +195,7 @@ img {
 /* ---------- hero ---------- */
 
 .hero {
-  --p: 0.14;
-  --mx: 0;
-  --my: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-  gap: 44px;
-  align-items: center;
-  padding-block: 84px 66px;
-}
-
-.hero-text {
-  min-width: 0;
-}
-
-/* exploded PCB — five SVG layers, separated by --p */
-
-.board {
-  position: relative;
-  perspective: 1100px;
-}
-
-.board-inner {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 420 / 300;
-  transform-style: preserve-3d;
-  transform: rotateX(calc(var(--p) * 40deg + var(--my) * 5deg))
-    rotateZ(calc(var(--p) * -12deg)) rotateY(calc(var(--mx) * -5deg));
-  transition: transform 0.3s ease-out;
-  transform-origin: 50% 55%;
-}
-
-.layer {
-  position: absolute;
-  inset: 0;
-  transform: translate3d(0, calc(var(--p) * var(--dy) * 1px), 0);
-  will-change: transform;
-}
-
-.layer svg {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: block;
-  overflow: visible;
-}
-
-.plate {
-  position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  background: var(--board-plate);
-  border: 1px solid var(--board-plate-edge);
-  opacity: 0;
-  opacity: calc(var(--p) * 0.44 - 0.06);
-}
-
-.layer-sub svg {
-  filter: drop-shadow(0 20px 26px rgba(0, 0, 0, 0.22));
-}
-
-.layer-top svg {
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.28));
+  padding-block: 92px 68px;
 }
 
 .hero-status {
@@ -1021,20 +941,7 @@ a.v:hover {
   }
 
   .hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 34px;
-    padding-block: 56px 46px;
-  }
-
-  .board {
-    order: 2;
-    width: 100%;
-    max-width: 440px;
-    margin: 0 auto;
-  }
-
-  .board-inner {
-    transform: none;
+    padding-block: 62px 46px;
   }
 
   .section {
@@ -1068,11 +975,6 @@ a.v:hover {
     transition: none;
     transform: none;
   }
-
-  .board-inner {
-    transform: none;
-    transition: none;
-  }
 }
 
 /* ---------- print ---------- */
@@ -1090,8 +992,7 @@ a.v:hover {
   .theme-toggle,
   .detail-nav,
   .hero-links,
-  .card-media,
-  .board {
+  .card-media {
     display: none;
   }
 
