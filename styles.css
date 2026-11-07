@@ -310,15 +310,39 @@ img {
   color: var(--ink-3);
 }
 
-.card-media svg {
+.card-media svg,
+.card-media img,
+.custom-card-media img {
   width: 100%;
   height: 100%;
   display: block;
+  object-fit: cover;
   transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.card:hover .card-media svg {
+.card:hover .card-media svg,
+.card:hover .card-media img,
+.custom-card:hover .custom-card-media img {
   transform: scale(1.035);
+}
+
+.custom-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+  overflow: hidden;
+}
+
+.custom-card-link {
+  margin-top: 14px;
+}
+
+.section-sub {
+  font-size: 14.5px;
+  color: var(--ink-2);
+  margin: -14px 0 24px;
+  line-height: 1.5;
 }
 
 .card-body {

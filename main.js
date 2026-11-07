@@ -5,6 +5,56 @@
 (function () {
   "use strict";
 
+  /* ---------- draft preview detection ---------- */
+
+  var draft = null;
+  if (
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.search.indexOf("preview=1") !== -1
+  ) {
+    try {
+      var raw = localStorage.getItem("portfolio_preview_draft");
+      if (raw) draft = JSON.parse(raw);
+    } catch (e) {}
+  }
+
+  var P_PROFILE =
+    (draft && draft.PROFILE) ||
+    (typeof PROFILE !== "undefined" ? PROFILE : window.PROFILE);
+  var P_PROJECTS =
+    (draft && draft.PROJECTS) ||
+    (typeof PROJECTS !== "undefined" ? PROJECTS : window.PROJECTS);
+  var P_EXPERIENCE =
+    (draft && draft.EXPERIENCE) ||
+    (typeof EXPERIENCE !== "undefined" ? EXPERIENCE : window.EXPERIENCE);
+  var P_RECOGNITION =
+    (draft && draft.RECOGNITION) ||
+    (typeof RECOGNITION !== "undefined" ? RECOGNITION : window.RECOGNITION);
+  var P_SKILLS =
+    (draft && draft.SKILLS) ||
+    (typeof SKILLS !== "undefined" ? SKILLS : window.SKILLS);
+  var P_ABOUT =
+    (draft && draft.ABOUT) ||
+    (typeof ABOUT !== "undefined" ? ABOUT : window.ABOUT);
+  var P_CUSTOM =
+    (draft && draft.CUSTOM_SECTIONS) ||
+    (typeof CUSTOM_SECTIONS !== "undefined"
+      ? CUSTOM_SECTIONS
+      : window.CUSTOM_SECTIONS);
+
+  function renderPreviewBanner() {
+    if (!draft) return;
+    var banner = document.createElement("div");
+    banner.style.cssText =
+      "background: #b4451f; color: #fff; padding: 8px 16px; font-family: monospace; font-size: 11px; text-align: center; position: sticky; top: 0; z-index: 9999; display: flex; justify-content: center; gap: 14px; align-items: center; flex-wrap: wrap;";
+    banner.innerHTML =
+      "<span>● LIVE DRAFT PREVIEW — Showing unsaved changes from Admin Studio</span>" +
+      '<a href="admin.html" style="color: #fff; text-decoration: underline; font-weight: bold;">Return to Studio</a>' +
+      '<a href="index.html" style="color: #fff; opacity: 0.85; text-decoration: underline;">Exit Preview</a>';
+    document.body.prepend(banner);
+  }
+
   /* ---------- theme ---------- */
 
   var root = document.documentElement;
@@ -212,7 +262,7 @@
     var host = document.querySelector("[data-hero]");
     if (!host) return;
 
-    var links = PROFILE.links
+    var links = P_PROFILE.links
       .map(function (l) {
         return (
           '<a class="chip" href="' +
@@ -228,16 +278,16 @@
 
     host.innerHTML =
       '<div class="hero-status"><span class="dot"></span>' +
-      esc(PROFILE.status) +
+      esc(P_PROFILE.status) +
       "</div>" +
       "<h1>" +
-      esc(PROFILE.name) +
+      esc(P_PROFILE.name) +
       "</h1>" +
       '<p class="hero-role">' +
-      esc(PROFILE.role) +
+      esc(P_PROFILE.role) +
       "</p>" +
       '<p class="hero-tagline">' +
-      esc(PROFILE.tagline) +
+      esc(P_PROFILE.tagline) +
       "</p>" +
       '<div class="hero-links">' +
       links +
@@ -250,7 +300,7 @@
 
     var accent = "var(--accent)";
 
-    host.innerHTML = PROJECTS.map(function (p, i) {
+    host.innerHTML = P_PROJECTS.map(function (p, i) {
       var n = String(i + 1).padStart(2, "0");
       var tags = (p.stack || [])
         .map(function (t) {
@@ -258,10 +308,17 @@
         })
         .join("");
 
+      var firstImg = (p.media || []).find(function (m) {
+        return m && m.src;
+      });
+      var mediaHtml = firstImg
+        ? '<img src="' + esc(firstImg.src) + '" alt="' + esc(firstImg.caption || p.title) + '" class="card-img" loading="lazy">'
+        : boardGlyph(p.slug, accent);
+
       return (
         '<article class="card reveal">' +
         '<div class="card-media">' +
-        boardGlyph(p.slug, accent) +
+        mediaHtml +
         "</div>" +
         '<div class="card-body">' +
         '<div class="card-kicker"><span>P' +
@@ -290,7 +347,7 @@
     var host = document.querySelector("[data-experience]");
     if (!host) return;
 
-    host.innerHTML = EXPERIENCE.map(function (x) {
+    host.innerHTML = P_EXPERIENCE.map(function (x) {
       var bullets = (x.bullets || [])
         .map(function (b) {
           return "<li>" + esc(b) + "</li>";
@@ -321,9 +378,9 @@
 
   function renderRecognition() {
     var host = document.querySelector("[data-recognition]");
-    if (!host || typeof RECOGNITION === "undefined") return;
+    if (!host || typeof P_RECOGNITION === "undefined") return;
 
-    host.innerHTML = RECOGNITION.map(function (r) {
+    host.innerHTML = P_RECOGNITION.map(function (r) {
       var link = r.link
         ? '<a class="rec-link" href="' +
           esc(r.link.href) +
@@ -358,7 +415,7 @@
     var host = document.querySelector("[data-skills]");
     if (!host) return;
 
-    host.innerHTML = SKILLS.map(function (g) {
+    host.innerHTML = P_SKILLS.map(function (g) {
       var items = g.items
         .map(function (it) {
           return (
@@ -388,13 +445,13 @@
     var host = document.querySelector("[data-about]");
     if (!host) return;
 
-    var ps = ABOUT.paragraphs
+    var ps = P_ABOUT.paragraphs
       .map(function (t) {
         return "<p>" + esc(t) + "</p>";
       })
       .join("");
 
-    var now = ABOUT.now
+    var now = P_ABOUT.now
       .map(function (n) {
         return (
           '<li><span class="k">' +
@@ -421,7 +478,7 @@
     var host = document.querySelector("[data-contact]");
     if (!host) return;
 
-    var rows = PROFILE.links
+    var rows = P_PROFILE.links
       .map(function (l) {
         return (
           '<div class="contact-row"><span class="k">' +
@@ -442,9 +499,9 @@
       '<p class="hero-tagline">The fastest way to reach me is email. I answer everything.</p>' +
       '<div class="contact-rows">' +
       '<div class="contact-row"><span class="k">Email</span><a class="v" href="mailto:' +
-      esc(PROFILE.email) +
+      esc(P_PROFILE.email) +
       '">' +
-      esc(PROFILE.email) +
+      esc(P_PROFILE.email) +
       "</a></div>" +
       rows +
       "</div>";
@@ -460,8 +517,8 @@
     var slug = params.get("p");
     var idx = -1;
 
-    for (var i = 0; i < PROJECTS.length; i++) {
-      if (PROJECTS[i].slug === slug) {
+    for (var i = 0; i < P_PROJECTS.length; i++) {
+      if (P_PROJECTS[i].slug === slug) {
         idx = i;
         break;
       }
@@ -473,15 +530,15 @@
         "<h1>Project not found</h1>" +
         '<p class="detail-lede">That link does not match anything in the project list. ' +
         'Check the address, or go back to the index.</p></div>';
-      document.title = "Not found — " + PROFILE.name;
+      document.title = "Not found — " + P_PROFILE.name;
       return;
     }
 
-    var p = PROJECTS[idx];
-    var prev = PROJECTS[idx - 1] || null;
-    var next = PROJECTS[idx + 1] || null;
+    var p = P_PROJECTS[idx];
+    var prev = P_PROJECTS[idx - 1] || null;
+    var next = P_PROJECTS[idx + 1] || null;
 
-    document.title = p.title + " — " + PROFILE.name;
+    document.title = p.title + " — " + P_PROFILE.name;
 
     var stack = (p.stack || []).join(" · ");
     var body = (p.body || [])
@@ -579,7 +636,7 @@
       '<div><div class="k">Index</div><div class="v">P' +
       String(idx + 1).padStart(2, "0") +
       " of " +
-      String(PROJECTS.length).padStart(2, "0") +
+      String(P_PROJECTS.length).padStart(2, "0") +
       "</div></div>" +
       "</div>" +
       "</div>" +
@@ -595,6 +652,134 @@
       media +
       nav +
       "</div>";
+  }
+
+  /* ---------- custom sections ---------- */
+
+  function renderCustomSections() {
+    var host = document.querySelector("[data-custom-sections]");
+    if (!host) return;
+
+    var sections = P_CUSTOM || [];
+
+    if (!sections || !sections.length) {
+      host.innerHTML = "";
+      return;
+    }
+
+    var html = sections
+      .map(function (sec, idx) {
+        var secNum = "C" + String(idx + 1).padStart(2, "0");
+        var itemsHtml = (sec.items || [])
+          .map(function (item) {
+            var tags = (item.tags || [])
+              .map(function (t) {
+                return '<span class="tag">' + esc(t) + "</span>";
+              })
+              .join("");
+
+            var mediaHtml = "";
+            if (item.media && item.media.length) {
+              var m = item.media[0];
+              if (m && m.src) {
+                mediaHtml =
+                  '<div class="custom-card-media"><img src="' +
+                  esc(m.src) +
+                  '" alt="' +
+                  esc(m.caption || item.title) +
+                  '" loading="lazy"></div>';
+              }
+            }
+
+            var linkHtml =
+              item.link && item.link.href
+                ? '<div class="custom-card-link"><a href="' +
+                  esc(item.link.href) +
+                  '" target="_blank" rel="noopener" class="chip">' +
+                  esc(item.link.label || "View Details") +
+                  ' <span class="arrow">&#8599;</span></a></div>'
+                : "";
+
+            return (
+              '<article class="card custom-card reveal">' +
+              mediaHtml +
+              '<div class="card-body">' +
+              '<div class="card-kicker"><span>' +
+              esc(item.date || "") +
+              "</span></div>" +
+              "<h3>" +
+              esc(item.title) +
+              "</h3>" +
+              '<p class="card-summary">' +
+              esc(item.summary || "") +
+              "</p>" +
+              (tags ? '<div class="tags">' + tags + "</div>" : "") +
+              linkHtml +
+              "</div>" +
+              "</article>"
+            );
+          })
+          .join("");
+
+        return (
+          '<section class="section wrap custom-section" id="' +
+          esc(sec.id) +
+          '">' +
+          '<div class="section-head">' +
+          '<span class="section-num">' +
+          secNum +
+          "</span>" +
+          '<h2 class="section-title">' +
+          esc(sec.title) +
+          "</h2>" +
+          '<span class="section-rule"></span>' +
+          "</div>" +
+          (sec.subtitle
+            ? '<p class="section-sub">' + esc(sec.subtitle) + "</p>"
+            : "") +
+          '<div class="work-grid">' +
+          itemsHtml +
+          "</div>" +
+          "</section>"
+        );
+      })
+      .join("");
+
+    host.innerHTML = html;
+  }
+
+  /* ---------- admin shortcuts ---------- */
+
+  function wireAdminShortcut() {
+    var trigger = document.querySelector("[data-admin-trigger]");
+    if (trigger) {
+      var clicks = 0;
+      var timer = null;
+      trigger.style.cursor = "pointer";
+      trigger.addEventListener("click", function () {
+        clicks++;
+        if (clicks === 1) {
+          timer = setTimeout(function () {
+            clicks = 0;
+          }, 800);
+        } else if (clicks === 3) {
+          clearTimeout(timer);
+          clicks = 0;
+          window.location.href = "admin.html";
+        }
+      });
+    }
+
+    window.addEventListener("keydown", function (e) {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.shiftKey &&
+        (e.key === "A" || e.key === "a")
+      ) {
+        e.preventDefault();
+        window.location.href = "admin.html";
+      }
+    });
   }
 
   /* ---------- reveal on scroll ---------- */
@@ -630,16 +815,19 @@
   /* ---------- boot ---------- */
 
   function boot() {
+    renderPreviewBanner();
     initTheme();
     wireTheme();
     renderHero();
     renderProjects();
+    renderCustomSections();
     renderExperience();
     renderRecognition();
     renderSkills();
     renderAbout();
     renderContact();
     renderProject();
+    wireAdminShortcut();
     wireReveal();
 
     var y = document.querySelector("[data-year]");
