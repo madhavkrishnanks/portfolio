@@ -103,16 +103,8 @@ const PROJECTS = [
     ],
     "media": [
       {
-        "caption": "Assembled unit — Pico W, TFT and joystick in the enclosure"
-      },
-      {
-        "caption": "Keypresses arriving on a host as standard HID events"
-      },
-      {
-        "caption": "Power section — 2S Li-ion pack, BMS and USB-C charging"
-      },
-      {
-        "caption": "Award certificate — MICA 2026"
+        "src": "images/satyalok-image-2ok-1794069184728.webp",
+        "caption": "User testing at Sathyalok School for Special Children in Porur."
       }
     ]
   },
