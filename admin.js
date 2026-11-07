@@ -293,24 +293,42 @@
 
   /* ---------- Data Serialization ---------- */
 
+  function cleanDataForExport(data) {
+    const clean = JSON.parse(JSON.stringify(data));
+    (clean.PROJECTS || []).forEach(p => {
+      (p.media || []).forEach(m => {
+        if (m && m.previewUrl) delete m.previewUrl;
+      });
+    });
+    (clean.CUSTOM_SECTIONS || []).forEach(s => {
+      (s.items || []).forEach(it => {
+        (it.media || []).forEach(m => {
+          if (m && m.previewUrl) delete m.previewUrl;
+        });
+      });
+    });
+    return clean;
+  }
+
   function serializeDataJs(data) {
+    const clean = cleanDataForExport(data);
     return `/* ------------------------------------------------------------------
    SITE CONTENT — Updated via Portfolio Admin Studio
    ------------------------------------------------------------------ */
 
-const PROFILE = ${JSON.stringify(data.PROFILE, null, 2)};
+const PROFILE = ${JSON.stringify(clean.PROFILE, null, 2)};
 
-const PROJECTS = ${JSON.stringify(data.PROJECTS, null, 2)};
+const PROJECTS = ${JSON.stringify(clean.PROJECTS, null, 2)};
 
-const EXPERIENCE = ${JSON.stringify(data.EXPERIENCE, null, 2)};
+const EXPERIENCE = ${JSON.stringify(clean.EXPERIENCE, null, 2)};
 
-const RECOGNITION = ${JSON.stringify(data.RECOGNITION, null, 2)};
+const RECOGNITION = ${JSON.stringify(clean.RECOGNITION, null, 2)};
 
-const SKILLS = ${JSON.stringify(data.SKILLS, null, 2)};
+const SKILLS = ${JSON.stringify(clean.SKILLS, null, 2)};
 
-const ABOUT = ${JSON.stringify(data.ABOUT, null, 2)};
+const ABOUT = ${JSON.stringify(clean.ABOUT, null, 2)};
 
-const CUSTOM_SECTIONS = ${JSON.stringify(data.CUSTOM_SECTIONS || [], null, 2)};
+const CUSTOM_SECTIONS = ${JSON.stringify(clean.CUSTOM_SECTIONS || [], null, 2)};
 
 if (typeof window !== "undefined") {
   window.PROFILE = PROFILE;
@@ -684,9 +702,10 @@ if (typeof module !== "undefined" && module.exports) {
             previewUrl: result.dataUrl
           });
 
-          // Attach to active project media
+          // Attach to active project media (keep previewUrl for immediate local preview)
           activeProjectMedia.push({
             src: repoPath,
+            previewUrl: result.dataUrl,
             caption: file.name.replace(/\.[^.]+$/, "")
           });
 

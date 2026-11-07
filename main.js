@@ -309,10 +309,15 @@
         .join("");
 
       var firstImg = (p.media || []).find(function (m) {
-        return m && m.src;
+        return m && (m.src || m.previewUrl);
       });
+      var imgSrc = firstImg ? firstImg.previewUrl || firstImg.src : "";
       var mediaHtml = firstImg
-        ? '<img src="' + esc(firstImg.src) + '" alt="' + esc(firstImg.caption || p.title) + '" class="card-img" loading="lazy">'
+        ? '<img src="' +
+          esc(imgSrc) +
+          '" alt="' +
+          esc(firstImg.caption || p.title) +
+          '" class="card-img" loading="lazy" onerror="if(!this.dataset.retry){this.dataset.retry=\'1\';this.src=\'https://raw.githubusercontent.com/madhavkrishnanks/portfolio/main/\'+this.getAttribute(\'src\');}">'
         : boardGlyph(p.slug, accent);
 
       return (
@@ -577,8 +582,13 @@
       ? '<div class="media-strip">' +
         p.media
           .map(function (m) {
-            var inner = m.src
-              ? '<img src="' + esc(m.src) + '" alt="' + esc(m.caption || "") + '">'
+            var imgSrc = m.previewUrl || m.src;
+            var inner = imgSrc
+              ? '<img src="' +
+                esc(imgSrc) +
+                '" alt="' +
+                esc(m.caption || "") +
+                '" onerror="if(!this.dataset.retry){this.dataset.retry=\'1\';this.src=\'https://raw.githubusercontent.com/madhavkrishnanks/portfolio/main/\'+this.getAttribute(\'src\');}">'
               : '<span class="ph">image</span>';
             return (
               '<figure class="media-item reveal" style="margin:0">' +
@@ -681,13 +691,14 @@
             var mediaHtml = "";
             if (item.media && item.media.length) {
               var m = item.media[0];
-              if (m && m.src) {
+              var customImgSrc = m && (m.previewUrl || m.src);
+              if (customImgSrc) {
                 mediaHtml =
                   '<div class="custom-card-media"><img src="' +
-                  esc(m.src) +
+                  esc(customImgSrc) +
                   '" alt="' +
                   esc(m.caption || item.title) +
-                  '" loading="lazy"></div>';
+                  '" loading="lazy" onerror="if(!this.dataset.retry){this.dataset.retry=\'1\';this.src=\'https://raw.githubusercontent.com/madhavkrishnanks/portfolio/main/\'+this.getAttribute(\'src\');}"></div>';
               }
             }
 
