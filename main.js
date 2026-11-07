@@ -1,17 +1,9 @@
 /* ==================================================================
-   main.js — renders the site dynamically from content.json
+   main.js — renders the site from data.js
    ================================================================== */
 
 (function () {
   "use strict";
-
-  // Globals populated from content.json
-  var PROFILE = null;
-  var PROJECTS = [];
-  var EXPERIENCE = [];
-  var RECOGNITION = [];
-  var SKILLS = [];
-  var ABOUT = null;
 
   /* ---------- theme ---------- */
 
@@ -218,9 +210,9 @@
 
   function renderHero() {
     var host = document.querySelector("[data-hero]");
-    if (!host || !PROFILE) return;
+    if (!host) return;
 
-    var links = (PROFILE.links || [])
+    var links = PROFILE.links
       .map(function (l) {
         return (
           '<a class="chip" href="' +
@@ -250,10 +242,6 @@
       '<div class="hero-links">' +
       links +
       "</div>";
-
-    if (typeof window.initHeroBoard === "function") {
-      window.initHeroBoard();
-    }
   }
 
   function renderProjects() {
@@ -270,24 +258,10 @@
         })
         .join("");
 
-      var firstImg =
-        Array.isArray(p.media) &&
-        p.media.find(function (m) {
-          return m && m.src;
-        });
-
-      var thumbHtml = firstImg
-        ? '<img class="card-img" src="' +
-          esc(firstImg.src) +
-          '" alt="' +
-          esc(firstImg.caption || p.title) +
-          '" loading="lazy">'
-        : boardGlyph(p.slug, accent);
-
       return (
         '<article class="card reveal">' +
         '<div class="card-media">' +
-        thumbHtml +
+        boardGlyph(p.slug, accent) +
         "</div>" +
         '<div class="card-body">' +
         '<div class="card-kicker"><span>P' +
@@ -317,13 +291,11 @@
     if (!host) return;
 
     host.innerHTML = EXPERIENCE.map(function (x) {
-      var bullets = (x.highlights || x.bullets || [])
+      var bullets = (x.bullets || [])
         .map(function (b) {
           return "<li>" + esc(b) + "</li>";
         })
         .join("");
-
-      var place = x.location || x.place || "";
 
       return (
         '<div class="xp-row reveal">' +
@@ -336,13 +308,8 @@
         "</h3>" +
         '<p class="xp-org">' +
         esc(x.org) +
-        (place ? '<span class="sep">/</span>' + esc(place) : "") +
+        (x.place ? '<span class="sep">/</span>' + esc(x.place) : "") +
         "</p>" +
-        (x.summary
-          ? '<p style="margin:0 0 10px;font-size:14.5px;color:var(--ink-2);">' +
-            esc(x.summary) +
-            "</p>"
-          : "") +
         "<ul>" +
         bullets +
         "</ul>" +
@@ -354,17 +321,16 @@
 
   function renderRecognition() {
     var host = document.querySelector("[data-recognition]");
-    if (!host) return;
+    if (!host || typeof RECOGNITION === "undefined") return;
 
     host.innerHTML = RECOGNITION.map(function (r) {
-      var link =
-        r.link && r.link.href
-          ? '<a class="rec-link" href="' +
-            esc(r.link.href) +
-            '" target="_blank" rel="noopener">' +
-            esc(r.link.label || "Link") +
-            " &#8599;</a>"
-          : "";
+      var link = r.link
+        ? '<a class="rec-link" href="' +
+          esc(r.link.href) +
+          '" target="_blank" rel="noopener">' +
+          esc(r.link.label) +
+          " &#8599;</a>"
+        : "";
 
       return (
         '<div class="rec-row reveal">' +
@@ -393,7 +359,7 @@
     if (!host) return;
 
     host.innerHTML = SKILLS.map(function (g) {
-      var items = (g.items || [])
+      var items = g.items
         .map(function (it) {
           return (
             "<li><span>" +
@@ -420,15 +386,15 @@
 
   function renderAbout() {
     var host = document.querySelector("[data-about]");
-    if (!host || !ABOUT) return;
+    if (!host) return;
 
-    var ps = (ABOUT.paragraphs || [])
+    var ps = ABOUT.paragraphs
       .map(function (t) {
         return "<p>" + esc(t) + "</p>";
       })
       .join("");
 
-    var now = (ABOUT.now || [])
+    var now = ABOUT.now
       .map(function (n) {
         return (
           '<li><span class="k">' +
@@ -453,9 +419,9 @@
 
   function renderContact() {
     var host = document.querySelector("[data-contact]");
-    if (!host || !PROFILE) return;
+    if (!host) return;
 
-    var rows = (PROFILE.links || [])
+    var rows = PROFILE.links
       .map(function (l) {
         return (
           '<div class="contact-row"><span class="k">' +
@@ -475,13 +441,11 @@
       "<h2>Get in touch.</h2>" +
       '<p class="hero-tagline">The fastest way to reach me is email. I answer everything.</p>' +
       '<div class="contact-rows">' +
-      (PROFILE.email
-        ? '<div class="contact-row"><span class="k">Email</span><a class="v" href="mailto:' +
-          esc(PROFILE.email) +
-          '">' +
-          esc(PROFILE.email) +
-          "</a></div>"
-        : "") +
+      '<div class="contact-row"><span class="k">Email</span><a class="v" href="mailto:' +
+      esc(PROFILE.email) +
+      '">' +
+      esc(PROFILE.email) +
+      "</a></div>" +
       rows +
       "</div>";
   }
@@ -508,8 +472,8 @@
         '<div class="detail-head wrap"><a class="back" href="index.html">&#8592; All work</a>' +
         "<h1>Project not found</h1>" +
         '<p class="detail-lede">That link does not match anything in the project list. ' +
-        "Check the address, or go back to the index.</p></div>";
-      document.title = "Not found — " + (PROFILE && PROFILE.name ? PROFILE.name : "Portfolio");
+        'Check the address, or go back to the index.</p></div>';
+      document.title = "Not found — " + PROFILE.name;
       return;
     }
 
@@ -517,7 +481,7 @@
     var prev = PROJECTS[idx - 1] || null;
     var next = PROJECTS[idx + 1] || null;
 
-    document.title = p.title + " — " + (PROFILE && PROFILE.name ? PROFILE.name : "Portfolio");
+    document.title = p.title + " — " + PROFILE.name;
 
     var stack = (p.stack || []).join(" · ");
     var body = (p.body || [])
@@ -663,33 +627,11 @@
     for (var j = 0; j < items.length; j++) io.observe(items[j]);
   }
 
-  function renderYear() {
-    var y = document.querySelectorAll("[data-year]");
-    var currentYear = String(new Date().getFullYear());
-    for (var i = 0; i < y.length; i++) {
-      y[i].textContent = currentYear;
-    }
-  }
+  /* ---------- boot ---------- */
 
-  function renderLoadError(err) {
-    var msg =
-      '<div class="wrap" style="padding-block:48px;">' +
-      '<div style="border:1px solid var(--rule-strong, #c9c2b6); padding:20px; font-family:var(--mono, monospace); font-size:13px; background:var(--surface);">' +
-      "<strong>ERROR // FAILED TO LOAD CONTENT.JSON</strong>" +
-      '<p style="margin-top:8px; color:var(--ink-2, #56565e);">Could not fetch site data (' +
-      esc(err && err.message ? err.message : "network error") +
-      "). Verify that <code>content.json</code> is present in the repository root.</p>" +
-      "</div></div>";
-
-    var target =
-      document.querySelector("[data-project]") ||
-      document.querySelector("[data-hero]") ||
-      document.querySelector("main");
-    if (target) target.innerHTML = msg;
-  }
-
-  function renderAll() {
-    renderYear();
+  function boot() {
+    initTheme();
+    wireTheme();
     renderHero();
     renderProjects();
     renderExperience();
@@ -699,40 +641,14 @@
     renderContact();
     renderProject();
     wireReveal();
+
+    var y = document.querySelector("[data-year]");
+    if (y) y.textContent = new Date().getFullYear();
   }
 
-  /* ---------- boot ---------- */
-
-  initTheme();
-  wireTheme();
-  renderYear();
-
-  fetch("content.json")
-    .then(function (r) {
-      if (!r.ok) {
-        throw new Error("HTTP " + r.status + " while fetching content.json");
-      }
-      return r.json();
-    })
-    .then(function (data) {
-      PROFILE = data.profile || {};
-      PROJECTS = Array.isArray(data.projects) ? data.projects : [];
-      EXPERIENCE = Array.isArray(data.experience) ? data.experience : [];
-      RECOGNITION = Array.isArray(data.recognition) ? data.recognition : [];
-      SKILLS = Array.isArray(data.skills) ? data.skills : [];
-      ABOUT = data.about || { paragraphs: [], now: [] };
-
-      // Expose globally for convenience
-      window.PROFILE = PROFILE;
-      window.PROJECTS = PROJECTS;
-      window.EXPERIENCE = EXPERIENCE;
-      window.RECOGNITION = RECOGNITION;
-      window.SKILLS = SKILLS;
-      window.ABOUT = ABOUT;
-
-      renderAll();
-    })
-    .catch(function (err) {
-      renderLoadError(err);
-    });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
 })();
