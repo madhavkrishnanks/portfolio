@@ -107,8 +107,8 @@ const PROJECTS = [
         "caption": "User testing at Sathyalok School for Special Children in Porur."
       },
       {
-        "src": "images/cheshire-image-2joystick-1794070316383.webp",
-        "caption": "User testing in Cheshire Homes at Thiruvanmiyur"
+        "src": "images/cheshire-image-2joystick-1794070524409.webp",
+        "caption": "Cheshire_image_2(joystick)"
       }
     ]
   },
