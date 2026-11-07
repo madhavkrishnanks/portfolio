@@ -1,4 +1,4 @@
-# Portfolio — K.S. Madhavkrishnan
+# Portfolio — Madhavkrishnan K S
 
 Static site. No framework, no build step, no dependencies to install.
 

@@ -18,7 +18,7 @@
    ------------------------------------------------------------------ */
 
 const PROFILE = {
-  name: "K.S. Madhavkrishnan",
+  name: "Madhavkrishnan K S",
   role: "Electronics & Embedded Engineer",
   tagline:
     "I write the protocol layer by hand, watch it on a logic analyser, then build the board that runs it.",
