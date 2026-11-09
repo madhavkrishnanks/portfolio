@@ -76,7 +76,7 @@ const PROJECTS = [
     "title": "Smart Assistive Keyboard",
     "summary": "A driverless USB-HID typing interface for motor-impaired users, built on a Raspberry Pi Pico W.",
     "year": "2026",
-    "role": "Solo — academic project",
+    "role": "Academic project",
     "stack": [
       "RP2040",
       "CircuitPython",
@@ -91,9 +91,8 @@ const PROJECTS = [
     ],
     "highlights": [
       "1st place, Research Paper Presentation — MICA 2026, national level symposium",
-      "Enumerates as a standard USB HID keyboard: no driver, no companion software",
-      "Multi-layer input with joystick dead zone and hysteresis",
-      "Rechargeable 2S Li-ion supply with BMS, USB-C charging and a regulated rail"
+      "Real user testing at Cheshire homes and Satyalok school of special children .",
+      "Got several feedbacks from the caretakers of the disabled children ,they were so happy to see this kind of projects that will help these students to improve themselves ."
     ],
     "links": [
       {
@@ -108,7 +107,7 @@ const PROJECTS = [
       },
       {
         "src": "images/cheshire-image-2joystick-1794070524409.webp",
-        "caption": "Cheshire_image_2(joystick)"
+        "caption": "User testing at Cheshire Homes in Thiruvanmiyur"
       }
     ]
   },
