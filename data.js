@@ -23,6 +23,77 @@ const PROFILE = {
 
 const PROJECTS = [
   {
+    "slug": "ev1527-rf-link",
+    "title": "EV1527 · 433.92 MHz RF Link",
+    "summary": "An Arduino Uno generating a 24-bit EV1527 baseband, carried over a 433.92 MHz OOK link, captured on a logic analyser and decoded by hand — then learned by a commercial learning relay.",
+    "year": "2026",
+    "role": "Independent bench project",
+    "stack": [
+      "Arduino Uno",
+      "433.92 MHz OOK",
+      "Logic Analysis",
+      "Protocol Decoding"
+    ],
+    "body": [
+      "EV1527 is the encoder inside almost every cheap 433 MHz remote, and the datasheet tells you far less than the signal does. So instead of buying a module and trusting it, I generated the baseband myself on an Arduino Uno's D8 pin, put it on air through an FS1000A-class 433.92 MHz OOK transmitter, and checked every claim twice — once on a Rigol DS1054Z and once on an 8-channel USB logic analyser running at 2 MHz.",
+      "The frame is pulse-width modulated over on-off keying: a 250 µs unit t, where a zero is 1t high and 3t low and a one is 3t high and 1t low. Twenty-five pulses make a frame — one sync pulse plus 24 data bits, a 20-bit address and 4-bit data, MSB first. Measured against nominal, the bit period came out at 1.020 ms rather than 1.000 ms, the sync pulse at 252 µs high with a 7750 µs low, an active frame of roughly 32.25 ms, and a repeat period of about 42.4 ms once the 10 ms inter-repeat gap is counted.",
+      "The first version was wrong in a way only a capture shows: the reference loop I started from emitted 32 data bits, 33 pulses per frame, against the 25 pulses the commercial remote actually sends. Fixing the loop to 24 data bits brought the frame into line. A second, smaller error showed up as roughly 20 µs of excess on every low period, which is the cost of AVR digitalWrite() and the delayMicroseconds() loop, not of the protocol. Automatic width measurement at 10 ms/div also quantised pulses to 200 µs display pixels, so pulse widths were measured at 500 µs/div instead.",
+      "The RF side was the honest part. With no carrier present, the XD-RF-5V receiver's high-gain slicer turns ambient thermal noise into random transitions, which looks exactly like a signal until you compare it against a real one. Adding two 17.3 cm quarter-wave wire whips and transmitting continuously gave stable carrier recovery, and capturing TX on D8 and RX on D7 at the same time showed what actually survived the air link. The end of the chain is the proof: a 12 V Songle learning relay receiver learned the code my Arduino generated and actuated on it, with the reference key fob's own frames decoded alongside for comparison — button A as address 0x61371 with data 1000, button B the same address with 0100."
+    ],
+    "highlights": [
+      "24-bit frame as 25 pulses: 1 sync plus 20-bit address and 4-bit data, MSB first",
+      "Measured t = 250.0 µs and a 1.020 ms bit period against 1.000 ms nominal",
+      "Active frame ~32.25 ms, repeated every ~42.4 ms with a 10 ms inter-repeat gap",
+      "TX (D8) and RX (D7) captured together on an 8-channel 2 MHz logic analyser",
+      "Corrected a 32-bit reference loop to the real 24-bit, 25-pulse frame",
+      "12 V learning relay learned the generated code and actuated end to end"
+    ],
+    "links": [
+      {
+        "label": "Repository",
+        "href": "https://github.com/madhavkrishnanks/EV1527_RF_Link"
+      },
+      {
+        "label": "Wiki",
+        "href": "https://github.com/madhavkrishnanks/EV1527_RF_Link/wiki/EV1527-Baseband,-433.92-MHz-Link,-Decode-and-Relay"
+      }
+    ],
+    "media": [
+      {
+        "src": "images/ev1527-rf-link-01.webp",
+        "caption": "FS1000A 433.92 MHz transmitter and XD-RF-5V receiver modules"
+      },
+      {
+        "src": "images/ev1527-rf-link-02.webp",
+        "caption": "Songle SRD-12VDC-SL-C 12 V learning relay receiver"
+      },
+      {
+        "src": "images/ev1527-rf-link-03.webp",
+        "caption": "Two-button EV1527 reference key fob"
+      },
+      {
+        "src": "images/ev1527-rf-link-04.webp",
+        "caption": "Bit timing at 500 µs/div — 250 µs high, 770 µs low, 1.020 ms period"
+      },
+      {
+        "src": "images/ev1527-rf-link-05.webp",
+        "caption": "25 pulses per frame (1 sync + 24 data) at 5 ms/div"
+      },
+      {
+        "src": "images/ev1527-rf-link-06.webp",
+        "caption": "TX (D8) and RX (D7) captured together at 2 MHz over 100 ms"
+      },
+      {
+        "src": "images/ev1527-rf-link-07.webp",
+        "caption": "Reference remote, button A — address 0x61371, data 1000"
+      },
+      {
+        "src": "images/ev1527-rf-link-08.webp",
+        "caption": "Receiver idle noise with no carrier present"
+      }
+    ]
+  },
+  {
     "slug": "aquachirp",
     "title": "AQUACHIRP — Software-Defined Sonar Transmitter",
     "summary": "A low-power acoustic transmitter payload for autonomous underwater vehicles, with the waveforms synthesised in software on an STM32. SIH 2026, PS 26058 (MoES / NIOT).",
@@ -55,19 +126,27 @@ const PROJECTS = [
     ],
     "media": [
       {
-        "caption": "Transmitter board on the bench"
+        "src": "images/aquachirp-01.webp",
+        "caption": "Signal chain on the bench at 3.3 V — current draw read on the DMM (2.40 mA)"
       },
       {
+        "src": "images/aquachirp-02.webp",
         "caption": "Scope capture — LFM chirp at the transducer drive"
       },
       {
+        "src": "images/aquachirp-03.webp",
         "caption": "Power measurement — signal chain at 3.3 V"
       },
       {
         "caption": "Block diagram — STM32, DMA, reconstruction chain, self-monitor"
       },
       {
-        "caption": "Waveform comparison — CW, chirp, geometric, Barker-13"
+        "src": "images/aquachirp-04.webp",
+        "caption": "Waveform comparison — CW, chirp and phase-coded captures"
+      },
+      {
+        "src": "images/aquachirp-05.webp",
+        "caption": "AUV hull concept — sensor ports for TDS, turbidity, depth and temperature"
       }
     ]
   },
@@ -76,7 +155,7 @@ const PROJECTS = [
     "title": "Smart Assistive Keyboard",
     "summary": "A driverless USB-HID typing interface for motor-impaired users, built on a Raspberry Pi Pico W.",
     "year": "2026",
-    "role": "Solo — academic project",
+    "role": "Academic project",
     "stack": [
       "RP2040",
       "CircuitPython",
@@ -91,9 +170,8 @@ const PROJECTS = [
     ],
     "highlights": [
       "1st place, Research Paper Presentation — MICA 2026, national level symposium",
-      "Enumerates as a standard USB HID keyboard: no driver, no companion software",
-      "Multi-layer input with joystick dead zone and hysteresis",
-      "Rechargeable 2S Li-ion supply with BMS, USB-C charging and a regulated rail"
+      "Real user testing at Cheshire homes and Satyalok school of special children .",
+      "Got several feedbacks from the caretakers of the disabled children ,they were so happy to see this kind of projects that will help these students to improve themselves ."
     ],
     "links": [
       {
@@ -103,8 +181,20 @@ const PROJECTS = [
     ],
     "media": [
       {
+        "src": "images/smart-assistive-keyboard-01.webp",
+        "caption": "Assembled prototype — six buttons, TFT, rotary encoder and Pico W"
+      },
+      {
         "src": "images/satyalok-image-2ok-1794069184728.webp",
         "caption": "User testing at Sathyalok School for Special Children in Porur."
+      },
+      {
+        "src": "images/cheshire-image-2joystick-1794070524409.webp",
+        "caption": "User testing at Cheshire Homes in Thiruvanmiyur"
+      },
+      {
+        "src": "images/smart-assistive-keyboard-02.webp",
+        "caption": "KiCad carrier board layout"
       }
     ]
   },
@@ -308,13 +398,19 @@ const PROJECTS = [
     ],
     "media": [
       {
-        "caption": "FT232R and AT24C256 on the bench"
+        "src": "images/ft232r-i2c-eeprom-01.webp",
+        "caption": "Read-back dump compared against what was written"
       },
       {
+        "src": "images/ft232r-i2c-eeprom-02.webp",
         "caption": "PulseView capture — address byte, ACK, data byte"
       },
       {
-        "caption": "Read-back dump compared against what was written"
+        "src": "images/ft232r-i2c-eeprom-03.webp",
+        "caption": "Single-byte write sequence, decoded"
+      },
+      {
+        "caption": "FT232R and AT24C256 on the bench"
       }
     ]
   },
@@ -349,13 +445,20 @@ const PROJECTS = [
     ],
     "media": [
       {
+        "src": "images/vibratory-alginate-spatula-01.webp",
         "caption": "Assembled device"
       },
       {
+        "src": "images/vibratory-alginate-spatula-02.webp",
         "caption": "Motor, relay and drive circuit"
       },
       {
-        "caption": "Power section — 2S pack, BMS, buck converter"
+        "src": "images/vibratory-alginate-spatula-03.webp",
+        "caption": "Power section — 18650 cell, buck converter and relay board"
+      },
+      {
+        "src": "images/vibratory-alginate-spatula-04.webp",
+        "caption": "Interruption case — buzzer stop reported on the LCD"
       }
     ]
   },
