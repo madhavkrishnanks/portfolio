@@ -839,9 +839,10 @@ a.v:hover {
 
 .media-frame {
   aspect-ratio: 16 / 9;
-  max-height: 300px;
-  display: grid;
-  place-items: center;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--bg);
   color: var(--ink-3);
   font-family: var(--mono);
@@ -851,24 +852,31 @@ a.v:hover {
 }
 
 .media-frame .ph {
-  opacity: 0.32;
+  opacity: 0.75;
   letter-spacing: 0.24em;
+  padding: 32px 20px;
+  text-align: center;
+  border: 1px dashed var(--rule);
+  width: calc(100% - 40px);
+  box-sizing: border-box;
 }
 
 .media-frame img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  display: block;
 }
 
 .media-cap {
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: 12px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink-3);
-  padding: 11px 14px;
+  color: var(--ink-2);
+  padding: 12px 14px;
   border-top: 1px solid var(--rule);
+  line-height: 1.5;
 }
 
 .detail-nav {
