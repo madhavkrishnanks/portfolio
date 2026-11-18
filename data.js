@@ -190,8 +190,7 @@ const PROJECTS = [
       },
       {
         "src": "images/cheshire-image-2joystick-1794070524409.webp",
-        "caption": "User testing at Cheshire Homes in Thiruvanmiyur"
-      },
+        "caption": "User testing at Cheshire Homes in Thiruvanmiyur"      },
       {
         "src": "images/smart-assistive-keyboard-02.webp",
         "caption": "KiCad carrier board layout"
