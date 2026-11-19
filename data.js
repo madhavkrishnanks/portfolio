@@ -190,7 +190,8 @@ const PROJECTS = [
       },
       {
         "src": "images/cheshire-image-2joystick-1794070524409.webp",
-        "caption": "User testing at Cheshire Homes in Thiruvanmiyur"      },
+        "caption": "User testing at Cheshire Homes in Thiruvanmiyur"
+      },
       {
         "src": "images/smart-assistive-keyboard-02.webp",
         "caption": "KiCad carrier board layout"
@@ -202,65 +203,74 @@ const PROJECTS = [
     "title": "Smart Motor Control & Monitoring",
     "summary": "An STM32 board that drives a brushed DC motor, measures its current, trips on overload, and keeps a timestamped event log in flash.",
     "year": "2026",
-    "role": "Solo — coursework",
+    "role": "Coursework — 21ECC301P, SRM IST (with Sanjay Gopi)",
     "stack": [
       "STM32F103",
-      "PWM",
-      "ADC",
-      "I2C",
+      "DRV8833",
+      "ACS712",
+      "I²C",
       "SPI",
       "UART"
     ],
     "body": [
-      "Built around an STM32F103RBT6 with five peripherals running at once: PWM on TIM3 into a DRV8833 driver, an ACS712 current sense on the ADC, UART over an FT232R, an AT24C256 EEPROM on I2C, and a W25Q64 flash on SPI. Configuration lives in the EEPROM; the event history lives in the flash.",
-      "The current sensor is auto-zeroed at boot, so the overload threshold is measured against a real baseline rather than a guessed one. When the threshold trips, the motor stops and the fault is written to the log with a timestamp.",
-      "The UART, I2C and ADC paths are verified working on hardware. Five peripherals on one MCU means five things sharing a clock tree and a scheduler, and getting that configuration right was most of the project."
+      "Built around an STM32F103RBT6 on a Nucleo-64 with five peripherals running at once: TIM3 PWM on PA6 and PA7 into a DRV8833 dual H-bridge, an ACS712 Hall-effect current sensor on ADC1 channel 0 through a 10k/20k divider, USART1 at 115200 through an FT232R bridge, an AT24C256 EEPROM on I²C1, and a W25Q64 flash on SPI2. The split is deliberate: configuration — maximum speed and current limit — lives in the small rewritable EEPROM, while the timestamped event history appends to the larger flash.",
+      "The current sensor is auto-zeroed at boot: the ACS712 sits at a nominal 2.5 V at zero current, but the actual module output is offset slightly, so the firmware samples it once with the motor off and subtracts that as the reference. Without it the overload threshold would be measured against a guessed baseline. When the threshold trips, the motor stops and the fault is written to the log with a timestamp.",
+      "Two things came out of testing that are worth keeping. The high-current path only works if the motor supply is wired in series through the ACS712's IP+ and IP− terminals with a genuinely common ground between controller, sensor and driver — that was checked with a multimeter before any motor power was applied. And the firmware is in C against the STM32 HAL in STM32CubeIDE, exercised from a browser-based serial console at 115200 baud: STATUS, SELFTEST, START, STOP and SPEED, with the console showing all five subsystem checks passing."
     ],
     "highlights": [
-      "Five peripherals integrated on one MCU — TIM3 PWM, ACS712 on ADC, FT232R UART, AT24C256 on I2C, W25Q64 on SPI",
-      "Boot-time auto-zero calibration of the ACS712 baseline before the overload threshold is armed",
+      "Five peripherals on one MCU — TIM3 PWM, ACS712 on ADC, FT232R UART, AT24C256 on I²C, W25Q64 on SPI",
+      "Configuration in EEPROM, timestamped event log in flash — two memories on two buses by design",
+      "Boot-time auto-zero of the ACS712 baseline before the overload threshold is armed",
       "Overload trip stops the motor and writes a timestamped fault record to flash",
-      "UART, I2C and ADC paths verified working"
+      "Power stage verified with a multimeter before motor power: series current path, common ground"
     ],
     "links": [],
     "media": [
       {
-        "caption": "Board with the DRV8833 driver and motor terminals"
+        "src": "images/smart-motor-control-01.webp",
+        "caption": "Bench rig — STM32 Nucleo, DRV8833 driver, ACS712 current sensor and the 2S pack"
       },
       {
-        "caption": "Scope capture — PWM duty ramp and motor current"
+        "src": "images/smart-motor-control-02.webp",
+        "caption": "Block diagram — five peripherals on one STM32F103RBT6: PWM, ADC, UART, I²C and SPI"
       },
       {
-        "caption": "Overload trip and the resulting flash log entry"
+        "src": "images/smart-motor-control-03.webp",
+        "caption": "Serial console — all five subsystem self-tests passing at 115200 baud"
       },
       {
-        "caption": "Block diagram — peripherals and buses"
+        "src": "images/smart-motor-control-04.webp",
+        "caption": "Live monitor — RPM and current streamed while the same telemetry lands in EEPROM and flash"
       }
     ]
   },
   {
     "slug": "skyguard-ai",
     "title": "SkyGuard AI",
-    "summary": "Quality control for weather sensor networks: telling a real weather event apart from a sensor that has failed. SIH 2026, PS 26073 (MoES / IMD).",
+    "summary": "Quality control for weather sensor networks: deciding whether an unusual observation is a real weather event or a failed sensor, then repairing it rather than discarding it. SIH 2026, PS 26073 (Disaster Management).",
     "year": "2026",
     "role": "Team Kestrel — Smart India Hackathon",
     "stack": [
       "ESP32-C3",
-      "MQTT",
       "FastAPI",
       "PyTorch",
-      "React"
+      "MQTT",
+      "React",
+      "SHAP"
     ],
     "body": [
-      "A failed sensor and a genuine weather event look identical in a single time series: both are a value that should not be there. The brief from MoES and IMD was to separate the two at network scale, so a dead sensor does not get reported as a heatwave.",
-      "The pipeline runs from two BME280s on an ESP32-C3, published over MQTT to a FastAPI service, scored by a three-model ensemble — a Transformer-VAE, an Anomaly Transformer and an Isolation Forest — over 22 engineered features, and surfaced on a React dashboard.",
-      "Benchmarked at roughly 90 ms per decision with about 265K parameters. On the frozen evaluation set: F1 0.835, precision 0.979, recall 0.728. Validated with an eight-scenario fault-injection harness that manufactures the failure modes the models are supposed to catch."
+      "A dead sensor and a genuine weather event look identical in a single time series: both are a value that should not be there. The brief was to separate the two at network scale, so a failed sensor does not get reported as a heatwave — and so a real extreme is not thrown away as noise.",
+      "The chain starts at the node: an ESP32-C3 reading two BME280s for temperature, humidity and pressure, with range, rate-of-change, sensor-consensus and freeze checks run at the edge before anything is transmitted, plus packet and timestamp integrity checks so corrupt data never reaches the models. Valid packets are published over MQTT to a FastAPI service that extracts 22 meteorological features from sliding windows and scores them with a three-model ensemble — a Transformer-VAE, an Anomaly Transformer and an Isolation Forest.",
+      "What makes it more than an anomaly detector is that the decision is not 'anomaly equals fault'. Two scores are kept separate: an anomaly score as evidence of a fault, and an event score as evidence of real weather, each confirmed across four pillars — temporal, spatial against buddy stations, physics such as dew point and thermodynamic consistency, and multivariate agreement between variables. The fusion resolves to Normal, Genuine Event, Sensor Fault or Review, SHAP explains which features drove the call, and faulty points are imputed from neighbouring stations and historical trends instead of being dropped.",
+      "It was built and tested on the Jena Climate dataset with five injected fault families — spike, drift, frozen, range and communication — and benchmarked at roughly 90 ms per decision with about 265K parameters. On the frozen evaluation set: F1 0.835, precision 0.979, recall 0.728."
     ],
     "highlights": [
-      "F1 0.835 · precision 0.979 · recall 0.728 on the frozen evaluation set",
-      "~90 ms per decision at ~265K parameters",
-      "Three-model ensemble over 22 engineered features",
-      "Validated with an eight-scenario fault-injection harness"
+      "Event-versus-fault disambiguation: S_anomaly and S_event kept as separate evidence",
+      "Four-pillar validation — temporal, spatial, physics and multivariate",
+      "Three-model ensemble over 22 engineered features from sliding windows",
+      "Edge QC before transmission: range, rate, consensus, freeze and integrity checks",
+      "Faulty observations imputed from buddy stations instead of discarded",
+      "F1 0.835 · precision 0.979 · recall 0.728 · ~90 ms per decision at ~265K parameters"
     ],
     "links": [
       {
@@ -270,41 +280,45 @@ const PROJECTS = [
     ],
     "media": [
       {
-        "caption": "Node — dual BME280 on an ESP32-C3"
+        "src": "images/skyguard-ai-01.webp",
+        "caption": "Node — ESP32-C3 with dual BME280 sensing temperature, humidity and pressure"
       },
       {
-        "caption": "React dashboard with live node health"
+        "src": "images/skyguard-ai-02.webp",
+        "caption": "React dashboard — station map, network telemetry and the QC scenario panel"
       },
       {
-        "caption": "Fault-injection harness — eight scenarios, scores per run"
-      },
-      {
-        "caption": "Pipeline diagram — node to MQTT to FastAPI to model"
+        "src": "images/skyguard-ai-03.webp",
+        "caption": "Pipeline — edge QC, 22-feature engine, three-model ensemble, four-pillar validation, diagnosis"
       }
     ]
   },
   {
     "slug": "rehost",
-    "title": "REhost — Cold-Chain Traceability Node",
-    "summary": "SIH 2025 ps",
-    "year": "2026",
-    "role": "Team Kestrel — Smart India Hackathon",
+    "title": "REhost — Active Phase-Balancing Controller",
+    "summary": "A low-cost controller fitted at rooftop-solar connection points: it measures three-phase voltage, computes the IEEE 112 voltage unbalance factor, and reassigns the solar feed to a healthier phase before the feeder rejects it. SIH 2025, PS 25064 (Government of Kerala).",
+    "year": "2025",
+    "role": "Team Kestrel — Smart India Hackathon 2025",
     "stack": [
       "ESP32",
-      "FreeRTOS",
-      "MQTT",
-      "Cryptography"
+      "ZMPT101B",
+      "SCT-013",
+      "SSR switching",
+      "IEEE 112"
     ],
     "body": [
-      "Cold-chain traceability fails at exactly the point it matters: a truck goes out of coverage, the link drops, and the log that would prove the shipment stayed cold is the log that never got written. So the node is offline-first. Every reading is AES-256 encrypted and appended to a local SHA-256 hash chain in flash, and the chain syncs to a ledger over MQTT whenever the link comes back. A gap in the chain is visible; a rewrite of history is not possible without breaking it.",
-      "It senses temperature, humidity, pressure and gas on a solar-powered ESP32, which sets the real constraint — energy. FreeRTOS firmware runs six prioritised tasks with adaptive power management, so sampling, logging, radio and the actuator loop do not starve each other.",
-      "The loop closes on the hardware: a relay-driven fan, a buzzer and status LEDs act on a threshold breach instead of just reporting it."
+      "Rooftop solar in India is almost always single-phase, so every household that installs it pushes its generation onto one phase of a three-phase LV feeder. Enough of that and the feeder unbalances: voltages drift, the distribution transformer runs hot, and the DISCOM starts rejecting new connections. Kerala alone had about 1500 MW of rooftop capacity riding on this. The equipment that fixes unbalance properly, a DSTATCOM or SVC, costs ₹5–15 lakh per feeder, which is why it is not deployed at the scale the problem exists at.",
+      "REhost's answer is to put a cheap closed-loop controller only where the injection happens — the solar household — instead of a central device on the feeder. It senses all three phase voltages with ZMPT101B boards and the currents with SCT-013 clamps, computes the Voltage Unbalance Factor using the IEEE 112 standard formula on an ESP32, and when VU% crosses 2% it identifies which phase is overloaded and which is starved, decides a better assignment for that household's solar plus load, and actuates a switching matrix. It then re-reads the phases to confirm the unbalance actually improved, logs the event and shows the state on a local I²C OLED.",
+      "The part worth being honest about is the switching hardware. Solid-state relays are what the prototype uses, and they are only good for demonstrating automated reassignment on a bench — they are not rated for continuous distribution-level duty. Utilities also cannot reconnect a house to a different phase at will, because of metering rules, safety procedure and the consumer's supply agreement, and neutral current and relay endurance both constrain how often you can switch. So the field version assumes utility-approved motorised or vacuum contactors and a DISCOM procedure around it, with the prototype proving only that the sense-decide-actuate loop closes in real time.",
+      "The economics are what make the idea worth the regulatory fight: 250–750× cheaper than the DSTATCOM/SVC alternative, protection for appliances against the 210–250 V excursions that unbalance produces, and longer transformer life by removing continuous unbalance stress — which raises how much rooftop solar a feeder can host before anyone has to rebuild it."
     ],
     "highlights": [
-      "AES-256 encrypted readings appended to a local SHA-256 hash chain, synced over MQTT on reconnect",
-      "Solar-powered, with adaptive power management across six FreeRTOS tasks",
-      "Sense-to-actuate loop — relay-driven fan, buzzer and LEDs on threshold breach",
-      "Temperature, humidity, pressure and gas logging for farm-to-fork traceability"
+      "IEEE 112 voltage unbalance factor computed on an ESP32 from ZMPT101B and SCT-013 sensing",
+      "VU% above 2% triggers automatic reassignment of the solar + load combination",
+      "Closed loop: sense, decide, actuate, re-verify, log — state shown on an I²C OLED",
+      "250–750× cheaper than DSTATCOM / SVC at ₹5–15 lakh per feeder",
+      "SSR switching in the prototype, utility-approved contactors assumed for field deployment",
+      "SIH 2025, PS 25064 — Government of Kerala, Renewable Energy (hardware)"
     ],
     "links": [
       {
@@ -314,16 +328,20 @@ const PROJECTS = [
     ],
     "media": [
       {
-        "caption": "Node — solar panel, sensor head, enclosure"
+        "src": "images/rehost-01.webp",
+        "caption": "Controller with the I²C OLED reading the three phase voltages at the solar connection point"
       },
       {
-        "caption": "Hash chain — readings, hashes and the sync boundary"
+        "src": "images/rehost-02.webp",
+        "caption": "Phase A at 9.87 V against 14.19 V on B and C — VU 22.6%, the unbalance the controller acts on"
       },
       {
-        "caption": "Actuator side — relay, fan and buzzer"
+        "src": "images/rehost-03.webp",
+        "caption": "Relay configuration stepping through R1, R2 and R3 as the solar feed is reassigned"
       },
       {
-        "caption": "FreeRTOS task layout and priority assignment"
+        "src": "images/rehost-04.webp",
+        "caption": "Sense → compute VU% by IEEE 112 → decide → actuate → re-verify and log"
       }
     ]
   },
@@ -357,13 +375,12 @@ const PROJECTS = [
     ],
     "media": [
       {
-        "caption": "FT232R and W25Q64JV on the bench"
+        "src": "images/ft232r-spi-flash-01.webp",
+        "caption": "PulseView — read and write status register, decoded on the SPI bus"
       },
       {
-        "caption": "PulseView capture — JEDEC ID transaction, CS to clock"
-      },
-      {
-        "caption": "Status register write sequence, decoded"
+        "src": "images/ft232r-spi-flash-02.webp",
+        "caption": "W25Q64 instruction set — the four opcodes this capture implements, 06h, 50h, 05h and 01h"
       }
     ]
   },
@@ -464,7 +481,7 @@ const PROJECTS = [
   {
     "slug": "elderzapp",
     "title": "ELDERZAPP — Elder-Friendly Smart Remote",
-    "summary": "An ESP8266 that fires IR commands at a TV set-top box, driven by an app built around large buttons and channel logos.",
+    "summary": "An ESP8266 that fires IR commands at a TV set-top box, driven by an app built around large buttons, channel logos and a single call-for-help control.",
     "year": "2025",
     "role": "Team — coursework",
     "stack": [
@@ -474,13 +491,14 @@ const PROJECTS = [
       "App prototyping"
     ],
     "body": [
-      "Set-top box remotes are small, crowded and unforgiving, which makes them hard work for an older user. ELDERZAPP replaces the remote with a phone screen designed for the person actually holding it: large buttons, channel logos instead of numbers, and the four things that get used — channel change, volume, power and a call-for-help.",
-      "An ESP8266 takes the request over Wi-Fi and fires the corresponding IR command at the set-top box, so the television hardware does not change at all. Medicine reminders and favourite channels round out the interface."
+      "Set-top box remotes are small, crowded and unforgiving, which makes them hard work for an older user. ELDERZAPP replaces the remote with a phone screen designed for the person actually holding it: large buttons, channel logos instead of numbers, and the four things that get used — channel change, volume, quick call and reminders.",
+      "The app is organised the way an older user thinks about their day rather than the way a TV menu is laid out: favourite channels on the home screen, a coming-up-next panel, a one-tap call to a caretaker, plus medicine reminders, a calendar and an alarm alongside the TV controls. An ESP8266 takes the request over Wi-Fi and fires the corresponding IR command at the set-top box, so the television hardware does not change at all."
     ],
     "highlights": [
-      "IR control of an existing set-top box over Wi-Fi — no change to the TV hardware",
-      "Interface designed for older users: large buttons, logos, call-for-help",
-      "Medicine reminders and favourite channels alongside the remote functions"
+      "IR control of an existing set-top box over Wi-Fi — no change to the TV or its box",
+      "Home screen built from favourite channels and logos, not channel numbers",
+      "Quick call to a caretaker, plus reminders, calendar and alarm in the same app",
+      "Designed for the person holding it: large targets, few choices per screen"
     ],
     "links": [
       {
@@ -490,13 +508,24 @@ const PROJECTS = [
     ],
     "media": [
       {
-        "caption": "App screen — main remote view"
+        "src": "images/elderzapp-01.webp",
+        "caption": "Home screen — favourite channels, current time and date, and quick access navigation"
       },
       {
-        "caption": "ESP8266 with the IR LED"
+        "src": "images/elderzapp-02.webp",
+        "caption": "TV remote interface — high-contrast power, volume and channel controls"
       },
       {
-        "caption": "Call-for-help and reminder screens"
+        "src": "images/elderzapp-03.webp",
+        "caption": "One-tap call screen — direct voice and video calling for primary contacts"
+      },
+      {
+        "src": "images/elderzapp-04.webp",
+        "caption": "Medicine schedule & reminders — daily dosage tracking with completion status"
+      },
+      {
+        "src": "images/elderzapp-05.webp",
+        "caption": "Daily calendar & auspicious timings — Rahu Kalam and Yamagandam alerts"
       }
     ]
   },
@@ -507,18 +536,19 @@ const PROJECTS = [
     "year": "2025",
     "role": "Team — coursework",
     "stack": [
-      "Analog",
-      "Optics",
-      "Audio"
+      "Laser diode",
+      "Solar cell",
+      "PAM8403",
+      "Discrete components"
     ],
     "body": [
-      "A deliberately simple optical link: a laser diode as the transmitter, a small solar panel as the receiver, and a PAM8403 audio amplifier driving a speaker at the far end. The audio signal modulates the laser, the panel turns the light back into a voltage, and the amplifier makes it audible.",
-      "Everything sits on a breadboard in discrete components, which is the point — it makes the signal path visible and every loss along it something you can probe. Voice and music both come through over a short distance."
+      "A deliberately simple optical link: a laser diode as the transmitter, a small solar panel as the receiver, and a PAM8403 audio amplifier driving a speaker at the far end. The audio signal modulates the laser, the panel turns the light back into a voltage, and the amplifier makes it audible. Music from a phone goes in at one end and comes out of the speaker at the other.",
+      "Everything sits on a breadboard in discrete components, which is the point — it makes the signal path visible and every loss along it something you can probe. The demonstration that matters is the negative one: putting a hand in the beam cuts the sound instantly, which tells you the link is line-of-sight only and that the receiver is doing no work beyond the light it actually receives."
     ],
     "highlights": [
-      "Laser diode transmitter, solar panel receiver, PAM8403 amplifier",
-      "Voice and music recovered over a short free-space link",
-      "Entirely discrete components on a breadboard — every node probeable"
+      "Laser diode transmitter, solar cell receiver, PAM8403 amplifier — all discrete on a breadboard",
+      "Music and voice recovered across the room over a free-space optical link",
+      "Blocking the beam silences the output — no carrier, no signal"
     ],
     "links": [
       {
@@ -528,13 +558,16 @@ const PROJECTS = [
     ],
     "media": [
       {
-        "caption": "Transmitter — laser diode with the audio drive"
+        "src": "images/laser-audio-link-01.webp",
+        "caption": "Phone feeding audio into the laser transmitter, receiver across the room"
       },
       {
-        "caption": "Receiver — solar panel and amplifier"
+        "src": "images/laser-audio-link-02.webp",
+        "caption": "Receiver — solar cell mounted on the speaker, fed from a 9 V supply"
       },
       {
-        "caption": "Breadboard, end to end"
+        "src": "images/laser-audio-link-03.webp",
+        "caption": "Breaking the beam by hand silences the output — the link is line of sight only"
       }
     ]
   }
